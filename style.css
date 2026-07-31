@@ -358,7 +358,18 @@ body {
 }
 
 .bubble.shout {
+  background: transparent;
+  border: none;
+}
+
+.bubble.shout::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  border: 2.5px solid #111;
   border-radius: 8px;
+  z-index: -1;
   clip-path: polygon(
     2% 20%, 12% 2%, 22% 18%, 34% 0%, 44% 20%, 58% 4%,
     68% 22%, 82% 6%, 90% 24%, 100% 14%, 96% 34%,
