@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>웹툰 메이커</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <h1>웹툰 메이커</h1>
+
+    <section>
+      <h2>1. 회차 구성 (씬 목록)</h2>
+      <div class="scene-list" id="sceneList"></div>
+      <button type="button" class="add-scene-btn" id="addScene">+ 씬 추가</button>
+    </section>
+
+    <section>
+      <h2>2. 현재 씬의 레이아웃</h2>
+      <div class="layout-grid" id="layoutGrid"></div>
+    </section>
+
+    <section>
+      <h2>3. 말풍선 추가</h2>
+      <div class="bubble-buttons">
+        <button type="button" data-type="normal">일반</button>
+        <button type="button" data-type="thought">생각</button>
+        <button type="button" data-type="shout">외침</button>
+      </div>
+    </section>
+
+    <section>
+      <h2>4. 전체 회차 내보내기</h2>
+      <div class="export-buttons">
+        <button type="button" id="exportPng">전체 회차 PNG로 저장</button>
+        <button type="button" id="exportPdf">전체 회차 PDF로 저장</button>
+      </div>
+      <p class="hint small">PNG는 모든 씬을 이어붙인 긴 스트립 1장으로, PDF는 씬마다 한 페이지씩 저장됩니다.</p>
+    </section>
+
+    <p class="hint">
+      씬을 추가해 회차를 구성하세요. 빈 칸을 클릭해 이미지를 넣고, 칸 안에서 드래그하면
+      이미지 위치를, 휠을 돌리면 확대/축소를 조정할 수 있어요.<br /><br />
+      말풍선은 드래그로 이동, 우측 하단 손잡이로 크기 조절,
+      더블클릭으로 글자를 입력할 수 있어요. 선택 후 Delete 키로 삭제됩니다.
+    </p>
+  </aside>
+
+  <main class="stage">
+    <div class="canvas-wrapper">
+      <div class="canvas" id="canvas"></div>
+    </div>
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
