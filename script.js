@@ -303,7 +303,7 @@
     canvasEl.innerHTML = "";
 
     layout.panels.forEach(function (rect, index) {
-      canvasEl.appendChild(buildPanelElement(rect, index, scene));
+      canvasEl.appendChild(buildPanelElement(rect, index, scene, layout.height));
     });
 
     var bubbleLayer = document.createElement("div");
@@ -313,7 +313,7 @@
     renderBubbles();
   }
 
-  function buildPanelElement(rect, index, scene) {
+  function buildPanelElement(rect, index, scene, layoutHeight) {
     var panel = document.createElement("div");
     panel.className = "panel";
     panel.style.top = pct(rect.top);
@@ -331,8 +331,19 @@
       if (!file) return;
       var reader = new FileReader();
       reader.onload = function () {
-        scene.panelsState[index] = { src: reader.result, posX: 50, posY: 50, scale: 100 };
-        applyPanelBackground(panel, index, scene);
+        var img = new Image();
+        img.onload = function () {
+          scene.panelsState[index] = {
+            src: reader.result,
+            naturalW: img.naturalWidth,
+            naturalH: img.naturalHeight,
+            posX: 50,
+            posY: 50,
+            scale: 100,
+          };
+          applyPanelBackground(panel, index, scene, rect, layoutHeight);
+        };
+        img.src = reader.result;
       };
       reader.readAsDataURL(file);
       fileInput.value = "";
@@ -359,7 +370,7 @@
     resetBtn.addEventListener("click", function (e) {
       e.stopPropagation();
       scene.panelsState[index] = { src: null, posX: 50, posY: 50, scale: 100 };
-      applyPanelBackground(panel, index, scene);
+      applyPanelBackground(panel, index, scene, rect, layoutHeight);
     });
     controls.appendChild(changeBtn);
     controls.appendChild(resetBtn);
@@ -373,7 +384,7 @@
       if (e.target !== panel) return;
       if (!scene.panelsState[index] || !scene.panelsState[index].src) return;
       deselectAllBubbles();
-      startPanelDrag(e, panel, index, scene);
+      startPanelDrag(e, panel, index, scene, rect, layoutHeight);
     });
 
     panel.addEventListener("wheel", function (e) {
@@ -381,21 +392,32 @@
       e.preventDefault();
       var state = scene.panelsState[index];
       state.scale = Math.max(100, Math.min(400, state.scale - e.deltaY * 0.1));
-      applyPanelBackground(panel, index, scene);
+      applyPanelBackground(panel, index, scene, rect, layoutHeight);
     });
 
-    applyPanelBackground(panel, index, scene);
+    applyPanelBackground(panel, index, scene, rect, layoutHeight);
     return panel;
   }
 
-  function applyPanelBackground(panel, index, scene) {
+  function applyPanelBackground(panel, index, scene, rect, layoutHeight) {
     var state = scene.panelsState[index];
     var placeholder = panel.querySelector(".panel-placeholder");
     if (state && state.src) {
       panel.classList.add("has-image");
       placeholder.style.display = "none";
       panel.style.backgroundImage = "url(" + state.src + ")";
-      panel.style.backgroundSize = state.scale + "%";
+
+      if (state.naturalW && state.naturalH) {
+        var panelW = (rect.w / 100) * CANVAS_W;
+        var panelH = (rect.h / 100) * layoutHeight;
+        var coverScale = Math.max(panelW / state.naturalW, panelH / state.naturalH);
+        var effectiveScale = coverScale * (state.scale / 100);
+        var renderedW = state.naturalW * effectiveScale;
+        var renderedH = state.naturalH * effectiveScale;
+        panel.style.backgroundSize = renderedW + "px " + renderedH + "px";
+      } else {
+        panel.style.backgroundSize = "cover";
+      }
       panel.style.backgroundPosition = state.posX + "% " + state.posY + "%";
     } else {
       panel.classList.remove("has-image");
@@ -404,10 +426,10 @@
     }
   }
 
-  function startPanelDrag(e, panel, index, scene) {
+  function startPanelDrag(e, panel, index, scene, panelRect, layoutHeight) {
     e.preventDefault();
     var state = scene.panelsState[index];
-    var rect = panel.getBoundingClientRect();
+    var domRect = panel.getBoundingClientRect();
     var startX = e.clientX;
     var startY = e.clientY;
     var startPosX = state.posX;
@@ -417,9 +439,9 @@
     function onMove(ev) {
       var dx = ev.clientX - startX;
       var dy = ev.clientY - startY;
-      state.posX = clamp(startPosX - (dx / rect.width) * 100, 0, 100);
-      state.posY = clamp(startPosY - (dy / rect.height) * 100, 0, 100);
-      applyPanelBackground(panel, index, scene);
+      state.posX = clamp(startPosX - (dx / domRect.width) * 100, 0, 100);
+      state.posY = clamp(startPosY - (dy / domRect.height) * 100, 0, 100);
+      applyPanelBackground(panel, index, scene, panelRect, layoutHeight);
     }
     function onUp() {
       panel.classList.remove("dragging");
