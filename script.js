@@ -691,11 +691,14 @@
     link.click();
   }
 
+  var SCENE_GAP_PX = 120;
+
   document.getElementById("exportPng").addEventListener("click", function () {
     captureAllScenes().then(function (captures) {
+      var gapTotal = SCENE_GAP_PX * Math.max(0, captures.length - 1);
       var totalHeight = captures.reduce(function (sum, c) {
         return sum + c.height;
-      }, 0);
+      }, gapTotal);
       var maxWidth = captures.reduce(function (max, c) {
         return Math.max(max, c.width);
       }, 0);
@@ -708,7 +711,8 @@
       ctx.fillRect(0, 0, maxWidth, totalHeight);
 
       var y = 0;
-      captures.forEach(function (c) {
+      captures.forEach(function (c, idx) {
+        if (idx > 0) y += SCENE_GAP_PX;
         ctx.drawImage(c, 0, y);
         y += c.height;
       });
